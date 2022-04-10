@@ -1,0 +1,4 @@
+Link: https://dev.mysql.com/downloads/mysql/
+Sign up for Oracle web account
+Installation Steps: https://blog.ineuron.ai/A-step-by-step-guide-to-install-and-set-up-the-MySql-in-Windows-A6ItSETRaj
+User/pwd: data_man_group3/abc123
