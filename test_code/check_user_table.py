@@ -25,6 +25,5 @@ mycursor.execute("SHOW COLUMNS FROM user_info")
 for x in mycursor:
     print(x)
 
-mycursor.execute("SELECT COUNT(*) FROM user_info")
-for x in mycursor:
-    print(x)
+mycursor.execute("SELECT * FROM user_info where num_tweets > 1 order by num_tweets asc")
+print(mycursor.fetchall())
