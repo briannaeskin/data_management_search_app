@@ -16,7 +16,7 @@ if __name__ == "__main__":
                         num_tweets, num_times_retweet, last_tweet) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
     user_update_query = """UPDATE user_info SET name = %s, screen_name = %s, followers_count = %s, friends_count = %s,
                         num_tweets = %s, num_times_retweet = %s, last_tweet = %s WHERE id = %s"""
-    user_update_query_2 = """"UPDATE user_info SET num_tweets = %s, num_times_retweet = %s WHERE id = %s"""
+    user_update_query_2 = """UPDATE user_info SET num_tweets = %s, num_times_retweet = %s WHERE id = %s"""
 
     id_set = set()
 
