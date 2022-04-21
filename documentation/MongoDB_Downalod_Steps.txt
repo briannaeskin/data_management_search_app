@@ -1,1 +1,2 @@
-Link: https://www.mongodb.com/try/download/community
+https://www.mongodb.com/blog/post/getting-started-with-python-and-mongodb
+Don't need to create the cluster, has already been created and should be set to accept any IP address
