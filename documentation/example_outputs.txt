@@ -1,0 +1,5 @@
+Example user output:
+('1001524548066562048', 'Schwesterfraudoktor', 'SchwesterFD', 21687, 631, 1, '1249404816620732416')
+
+Example tweet output:
+{'_id': ObjectId('6261facf27e1b98a0d812628'), 'tweet_id': '1249405547129925632', 'tweeted_date': datetime.datetime(2020, 4, 12, 18, 34, 29), 'user_id': '164932759', 'favorite_count': 0, 'retweet_count': 0, 'is_retweet': True, 'orig_hashtags': [], 'rt_hashtags': [], 'orig_text': 'RT @SirPareshRawal: When Corona Virus  is over, let’s spend our holidays in India, eat in local restaurants, buy local meats and veggies ,…', 'rt_text': None}
