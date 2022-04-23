@@ -1,6 +1,7 @@
 """
 Author: Brianna Eskin
-Function: Write data to MySQL and MongoDB datastores
+Function: Write data to MySQL and MongoDB datastores. Note, need to change file name accordingly, and make sure file is
+in same path as this file. Due to size, file couldn't be loaded to GitHub
 """
 
 from datetime import datetime, timezone
