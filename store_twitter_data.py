@@ -63,6 +63,7 @@ def mongo_indexes(twitter_data):
     twitter_data.tweet_info.create_index("user_id")
     twitter_data.tweet_info.create_index("favorite_count")
     twitter_data.tweet_info.create_index("retweet_count")
+    twitter_data.tweet_info.create_index("rt_id")
 
 def insert_mysql(data, connection, cursor, insert):
     """
@@ -83,10 +84,8 @@ def insert_mysql(data, connection, cursor, insert):
     """.format(data[1], data[2], data[3], data[4], data[5], data[6], data[0])
 
     if insert:
-        #print("INSERT_QUERY: ", INSERT_QUERY)
         cursor.execute(INSERT_QUERY)
     else:
-        print("UPDATE_QUERY: ", UPDATE_QUERY)
         cursor.execute(UPDATE_QUERY)
         connection.commit()
 
@@ -179,33 +178,19 @@ if __name__ == "__main__":
                 mysql_cursor.execute("SELECT * FROM user_info where user_id = %s", (user_id,))
                 user_entry = mysql_cursor.fetchone()
                 if not user_entry: #Entry not in table, need to add
-                    #print("Insert new user ", screen_name)
+                    print("Insert new user ", screen_name)
                     insert_data = [user_id, name, screen_name, followers_count, friends_count, 1, last_tweet]
-                    #print(insert_data)
                     insert_mysql(insert_data, mysql_connection, mysql_cursor, insert = True)
                     #print("User inserted")
                 else: #User exists
-                    print("Update user ", screen_name)
                     num_tweets = user_entry[5] + 1
-                    print("Number of tweets:",num_tweets)
                     if data['id_str'] > user_entry[6]: #More recent tweet, so check that other info is up to date
-                        print("More recent tweet")
-                        print("User ID: ", user_id)
-                        print("name: ", name)
-                        print("screen_name: ", screen_name)
-                        print("followers_count: ", followers_count)
-                        print("friends_count: ", friends_count)
-                        print("num_tweets: ", num_tweets)
-                        print("last tweet: ", last_tweet)
                         update_data = [user_id, name, screen_name, followers_count, friends_count, num_tweets, last_tweet]
-                        print(update_data)
                         insert_mysql(update_data, mysql_connection, mysql_cursor, insert = False)
                     else: #Less recent tweet, update num tweets only
-                        print("Less recent tweet")
                         update_data = [user_id, user_entry[1], user_entry[2], user_entry[3], user_entry[4], num_tweets, user_entry[6]]
-                        print(update_data)
                         insert_mysql(update_data, mysql_connection, mysql_cursor, insert = False)
-                    #print("User updated")
+                    print("User", screen_name, "updated")
 
                 #print("Compiling tweet info")
                 hashtags = []
@@ -215,19 +200,22 @@ if __name__ == "__main__":
                     hashtags.append(hashtag['text'])
                 retweet_hashtags = None
                 retweet_text = None
+                retweet_id = None
                 #print("Checking if retweet")
                 if (data['text'].startswith('RT')):
-                    #print(data['id_str'], "is retweet")
+                    print(data['id_str'], "is retweet")
                     is_retweet = True
                     try:
                         retweet_hashtags = []
                         for hashtag in data['retweeted_status']['entities']['hashtags']:
                             retweet_hashtags.append(hashtag['text'])
-                            retweet_text = data['retweeted_status']['text']
+                        retweet_text = data['retweeted_status']['text']
+                        retweet_id = data['retweeted_status']['id_str']
                     except:
                         #print("No retweeted_status")
                         retweet_hashtags = None
                         retweet_text = None
+                        retweet_id = None
                 #print("Making tweet document for storage")
                 tweet = {
                     "tweet_id": data['id_str'],
@@ -239,13 +227,20 @@ if __name__ == "__main__":
                     "orig_hashtags": hashtags,
                     "rt_hashtags": retweet_hashtags,
                     "orig_text": text,
-                    "rt_text": retweet_text
+                    "rt_text": retweet_text,
+                    "rt_id": retweet_id
                 }
                 #print("Tweet setup, ready to insert")
                 insert_mongo(tweet, twitter_data)
-                print("Finished for ID: ", data['id_str'])
+                #print("Finished for ID: ", data['id_str'])
             except Exception as e:
-                #print(e)
-                #print("Hit exception for ID: ", data['id_str'])
+                print(e)
+                print("Hit exception for ID: ", data['id_str'])
                 #break
                 continue
+    #Create indexes
+    mongo_indexes(twitter_data)
+
+    #Close DB
+    mysql_cursor.close()
+    mysql_connection.close()
