@@ -171,12 +171,23 @@ def gather_user_info(user, data, id_set):
 def gather_tweet_info(data):
     hashtags = []
     is_retweet = False
-    text = data['text']
+
+    try:
+        text = data['extended_tweet']['full_text']
+    except:
+        text = data['text']
+
     favorite_count = data['favorite_count'] if data['favorite_count'] else 0
     retweet_count = data['retweet_count'] if data['retweet_count'] else 0
     total_engagement = favorite_count + retweet_count
-    for hashtag in data['entities']['hashtags']:
-        hashtags.append(hashtag['text'])
+
+    try:
+        for hashtag in data['extended_tweet']['entities']['hashtags']:
+            hashtags.append(hashtag['text'])
+    except:
+        for hashtag in data['extended_tweet']['entities']['hashtags']:
+            hashtags.append(hashtag['text'])
+
     retweet_hashtags = None
     retweet_text = None
     retweet_id = None
@@ -185,9 +196,19 @@ def gather_tweet_info(data):
 def gather_retweet_info(data):
     is_retweet = True
     retweet_hashtags = []
-    for hashtag in data['entities']['hashtags']:
-        retweet_hashtags.append(hashtag['text'])
-    retweet_text = data['text']
+
+    try:
+        for hashtag in data['extended_tweet']['entities']['hashtags']:
+            retweet_hashtags.append(hashtag['text'])
+    except:
+        for hashtag in data['extended_tweet']['entities']['hashtags']:
+            retweet_hashtags.append(hashtag['text'])
+
+    try:
+        retweet_text = data['extended_tweet']['full_text']
+    except:
+        retweet_text = data['text']
+
     retweet_id = data['id_str']
     return is_retweet, retweet_hashtags, retweet_text, retweet_id
 
