@@ -27,10 +27,68 @@ class Search:
 
         #Placeholder for Redis store
 
+    def search_by_text(self, text, timerange_lower=None, timerange_upper=None):
+        """
+        Given a text, searches for relevant tweets with given text. Reports how many tweets contain the text, how many
+        retweets contain the text, the most popular tweets
+        """
+
+        start_time = time.time()
+        redis_enabled = False #Temp vairable since no cache is set up yet. Will remove this and all reference once set up
+
+        if redis_enabled:
+            cache_status = "Found in Redis"
+            pass
+
+        else:
+            cache_status = "Not Found in Redis. Data pulled from Mongo and mySQL"
+
+            query = {
+                "$or": [
+                    {'orig_text': {'$regex': text, '$options': 'i'}},
+                    {'rt_text': {'$regex': text,'$options': 'i'}}
+                ]
+            }
+
+            tweets_query = self.tweet_info_collection.find(query).sort('total_engagement', -1)
+
+            num_tweets = 0
+            num_retweets = 0
+            popular_tweets = ""
+
+            for tweet in tweets_query:
+                if not tweet['is_retweet']:
+                    num_tweets += 1
+                    if num_tweets <= 10:
+                        popular_tweets += str(tweet) + '\n'
+                else:
+                    num_retweets += 1
+
+            end_time = time.time()
+            query_runtime = end_time - start_time
+
+            query_runtime_ms = query_runtime * 1000
+            runtime = "Results returned in: {} ms".format(query_runtime_ms)
+
+            result = """
+            Result for text: {}
+
+            Number of Tweets: {}
+            Number of Retweets: {}
+
+            Most Popular Tweets: {}
+
+            """.format(text, num_tweets, num_retweets, popular_tweets)
+
+            # Add to Redis cache
+
+            return cache_status + '\n' + runtime + '\n' + result
+
+
     def search_by_hashtag(self, hashtag, timerange_lower=None, timerange_upper=None):
         """
         Given a hashtag, searches for relevant tweets with given hashtag. Reports how many tweets use that hashtag, how
-        many retweets use that hashtag, the most popular tweets, and the most recent retweets
+        many retweets use that hashtag, the most popular tweets
         """
 
         start_time = time.time()
@@ -160,7 +218,8 @@ class Search:
 if __name__ == "__main__":
     search = Search()
     #Test Queries
-    print(search.search_by_hashtag("coronavirus"))
-    print(search.search_by_hashtag("Coronavirus"))
-    print(search.search_by_hashtag("Sweden"))
+    #print(search.search_by_hashtag("coronavirus"))
+    #print(search.search_by_hashtag("Coronavirus"))
+    #print(search.search_by_hashtag("Sweden"))
+    print(search.search_by_text("Turkey"))
 
