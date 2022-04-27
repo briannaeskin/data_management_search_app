@@ -27,6 +27,63 @@ class Search:
 
         #Placeholder for Redis store
 
+    def search_by_hashtag(self, hashtag, timerange_lower=None, timerange_upper=None):
+        """
+        Given a hashtag, searches for relevant tweets with given hashtag. Reports how many tweets use that hashtag, how
+        many retweets use that hashtag, the most popular tweets, and the most recent retweets
+        """
+
+        start_time = time.time()
+        redis_enabled = False #Temp variable since no cache is set up yet. Will remove this and all reference once set up
+
+        if redis_enabled:
+            cache_status = "Found in Redis"
+            pass
+
+        else:
+            cache_status = "Not Found in Redis. Data pulled from Mongo and mySQL"
+
+            query = {
+                "$or": [
+                    {'orig_hashtags': {'$elemMatch': {'$regex': hashtag, '$options': 'i'}}},
+                    {'rt_hashtags': {'$elemMatch': {'$regex': hashtag,'$options': 'i'}}}
+                ]
+            }
+
+            tweets_query = self.tweet_info_collection.find(query).sort('total_engagement', -1)
+
+            num_tweets = 0
+            num_retweets = 0
+            popular_tweets = ""
+
+            for tweet in tweets_query:
+                if not tweet['is_retweet']:
+                    num_tweets += 1
+                    if num_tweets <= 10:
+                        popular_tweets += str(tweet) + '\n'
+                else:
+                    num_retweets += 1
+
+            end_time = time.time()
+            query_runtime = end_time - start_time
+
+            query_runtime_ms = query_runtime * 1000
+            runtime = "Results returned in: {} ms".format(query_runtime_ms)
+
+            result = """
+            Result for hashtag: {}
+            
+            Number of Tweets: {}
+            Number of Retweets: {}
+            
+            Most Popular Tweets: {}
+            
+            """.format(hashtag, num_tweets, num_retweets, popular_tweets)
+
+            #Add to Redis cache
+
+            return cache_status + '\n' + runtime + '\n' + result
+
     def search_by_user(self, user_name, timerange_lower=None, timerange_upper=None):
         """
         Given a user name, searches for relevant information about user, including name, screen_name, number of followers,
@@ -34,6 +91,7 @@ class Search:
         their 5 most popular tweets (or all tweets if user tweeted less than 5 times)
         """
 
+        start_time = time.time()
         redis_enabled = False #Temp variable since no cache is set up yet. Will remove this and all reference once set up
 
         #Query user_id based on screen_name, required for Redis lookup, so needs to execute regardless
@@ -45,8 +103,6 @@ class Search:
             return message
 
         user_id = user[0]
-
-        start_time = time.time()
 
         if redis_enabled:
             """
@@ -103,5 +159,8 @@ class Search:
 
 if __name__ == "__main__":
     search = Search()
-    print(search.search_by_user("biannagolodryga"))
+    #Test Queries
+    print(search.search_by_hashtag("coronavirus"))
+    print(search.search_by_hashtag("Coronavirus"))
+    print(search.search_by_hashtag("Sweden"))
 

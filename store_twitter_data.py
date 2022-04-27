@@ -25,7 +25,7 @@ def setup_mysql():
     friends_count INT,
     last_tweet_id VARCHAR(255),
     PRIMARY KEY(user_id),
-    INDEX(screen_name, followers_count, friends_count)
+    INDEX(screen_name)
     );
     """
 
@@ -62,7 +62,6 @@ def mongo_indexes(twitter_data):
     twitter_data.tweet_info.create_index("created_date")
     twitter_data.tweet_info.create_index("user_id")
     twitter_data.tweet_info.create_index("total_engagement")
-    twitter_data.tweet_info.create_index("rt_id")
 
 def insert_mysql(data, connection, cursor, insert):
     """
