@@ -4,6 +4,7 @@ Function: Holds the search app, including the GUI
 """
 
 from pymongo import MongoClient
+from datetime import datetime
 import mysql.connector as connection
 import time
 
@@ -37,17 +38,21 @@ class Search:
         redis_enabled = False #Temp vairable since no cache is set up yet. Will remove this and all reference once set up
 
         if redis_enabled:
-            cache_status = "Found in Redis"
+            cache_status = "Found in cache"
             pass
 
         else:
-            cache_status = "Not Found in Redis. Data pulled from Mongo and mySQL"
+            cache_status = "Not Found in cache. Data pulled from Mongo and mySQL"
+
+            timerange_lower = timerange_lower if timerange_lower else datetime.strptime('1/1/2000', '%m/%d/%Y')
+            timerange_upper = timerange_upper if timerange_upper else datetime.strptime('12/31/9999', '%m/%d/%Y')
 
             query = {
                 "$or": [
                     {'orig_text': {'$regex': text, '$options': 'i'}},
                     {'rt_text': {'$regex': text,'$options': 'i'}}
-                ]
+                ],
+                'tweeted_date': {'$gte': timerange_lower, '$lt': timerange_upper}
             }
 
             tweets_query = self.tweet_info_collection.find(query).sort('total_engagement', -1)
@@ -95,17 +100,21 @@ class Search:
         redis_enabled = False #Temp variable since no cache is set up yet. Will remove this and all reference once set up
 
         if redis_enabled:
-            cache_status = "Found in Redis"
+            cache_status = "Found in cache"
             pass
 
         else:
-            cache_status = "Not Found in Redis. Data pulled from Mongo and mySQL"
+            cache_status = "Not Found in cache. Data pulled from Mongo and mySQL"
+
+            timerange_lower = timerange_lower if timerange_lower else datetime.strptime('1/1/2000', '%m/%d/%Y')
+            timerange_upper = timerange_upper if timerange_upper else datetime.strptime('12/31/9999', '%m/%d/%Y')
 
             query = {
                 "$or": [
                     {'orig_hashtags': {'$elemMatch': {'$regex': hashtag, '$options': 'i'}}},
                     {'rt_hashtags': {'$elemMatch': {'$regex': hashtag,'$options': 'i'}}}
-                ]
+                ],
+                'tweeted_date': {'$gte': timerange_lower, '$lt': timerange_upper}
             }
 
             tweets_query = self.tweet_info_collection.find(query).sort('total_engagement', -1)
@@ -167,16 +176,21 @@ class Search:
             This is the placeholder for the cache check. For now passing. But when ready for implementation will need to
             replace with check for redis key and fill in accordingly
             """
-            cache_status = "Found in Redis"
+            cache_status = "Found in cache"
             pass
         else:
-            cache_status = "Not Found in Redis. Data pulled from Mongo and mySQL"
+            cache_status = "Not Found in cache. Data pulled from Mongo and mySQL"
             user_name = user[1]
             screen_name = user[2]
             num_followers = user[3]
             num_friends = user[4]
 
-            tweets = self.tweet_info_collection.find({'user_id': user_id}).sort('total_engagement', -1)
+            timerange_lower = timerange_lower if timerange_lower else datetime.strptime('1/1/2000', '%m/%d/%Y')
+            timerange_upper = timerange_upper if timerange_upper else datetime.strptime('12/31/9999', '%m/%d/%Y')
+
+            query = {'user_id': user_id, 'tweeted_date': {'$gte': timerange_lower, '$lt': timerange_upper}}
+
+            tweets = self.tweet_info_collection.find(query).sort('total_engagement', -1)
 
             num_tweets = 0
             most_recent_tweet = None
@@ -219,7 +233,11 @@ if __name__ == "__main__":
     search = Search()
     #Test Queries
     #print(search.search_by_hashtag("coronavirus"))
-    #print(search.search_by_hashtag("Coronavirus"))
-    #print(search.search_by_hashtag("Sweden"))
-    print(search.search_by_text("Turkey"))
+    #print(search.search_by_hashtag("Drosten"))
+
+    #print(search.search_by_text("Turkey", None,datetime.strptime('04/10/2020','%m/%d/%Y')))
+    #print(search.search_by_text("Trump"))
+
+    print(search.search_by_user("Turkey_Pics", None, datetime.strptime('04/4/2020','%m/%d/%Y')))
+    #print(search.search_by_user("nuffsaidny"))
 
