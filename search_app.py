@@ -166,7 +166,7 @@ class Search:
         user = self.cursor.fetchone()
 
         if not user:#No user found
-            message = "No user found with provided user name"
+            message = "No user found with provided user name {}".format(user_name)
             return message
 
         user_id = user[0]

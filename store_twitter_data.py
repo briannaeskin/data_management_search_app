@@ -185,7 +185,7 @@ def gather_tweet_info(data):
         for hashtag in data['extended_tweet']['entities']['hashtags']:
             hashtags.append(hashtag['text'])
     except:
-        for hashtag in data['extended_tweet']['entities']['hashtags']:
+        for hashtag in data['entities']['hashtags']:
             hashtags.append(hashtag['text'])
 
     retweet_hashtags = None
@@ -201,7 +201,7 @@ def gather_retweet_info(data):
         for hashtag in data['extended_tweet']['entities']['hashtags']:
             retweet_hashtags.append(hashtag['text'])
     except:
-        for hashtag in data['extended_tweet']['entities']['hashtags']:
+        for hashtag in data['entities']['hashtags']:
             retweet_hashtags.append(hashtag['text'])
 
     try:
@@ -219,7 +219,7 @@ if __name__ == "__main__":
     id_set = set()
     tweet_id_set = set()
 
-    with open("corona-out-2.json", "r") as f1:
+    with open("corona-out-3.JSON", "r") as f1:
         for line in f1:
             try:
                 data = json.loads(line)
@@ -231,7 +231,7 @@ if __name__ == "__main__":
                     print("Skipping tweet", data['id_str'], "since it already exists in DB")
                     continue
 
-                print("Starting user checks")
+                #print("Starting user checks")
 
                 user = data['user']
 
@@ -244,25 +244,25 @@ if __name__ == "__main__":
                     insert_data = [user_id, name, screen_name, followers_count, friends_count, last_tweet]
                     insert_mysql(insert_data, mysql_connection, mysql_cursor, insert = True)
                 else: #User exists
-                    print("Last Tweet: ", user_entry[5])
+                    #print("Last Tweet: ", user_entry[5])
                     if data['id_str'] > user_entry[5]: #More recent tweet, so check that other info is up to date
                         print("Update user", screen_name)
                         update_data = [user_id, name, screen_name, followers_count, friends_count, last_tweet]
                         insert_mysql(update_data, mysql_connection, mysql_cursor, insert = False)
                     else:
-                        print("Tweet more recent, skipping update")
+                        print("Tweet more recent, skipping update for user ", screen_name)
 
-                print("Start compiling tweet info")
+                #print("Start compiling tweet info")
 
                 hashtags, is_retweet, text, favorite_count, retweet_count, total_engagement, retweet_hashtags, retweet_text, retweet_id = gather_tweet_info(data)
 
                 if data['text'].startswith('RT'):
-                    print("Is retweet")
+                    print("Tweet", data['id_str'], "is retweet")
                     try:
                         retweet_data = data['retweeted_status']
                         is_retweet, retweet_hashtags, retweet_text, retweet_id = gather_retweet_info(retweet_data)
                     except:
-                        print("No retweeted status")
+                        #print("No retweeted status")
                         is_retweet = True
                         retweet_hashtags = None
                         retweet_text = None
@@ -284,11 +284,12 @@ if __name__ == "__main__":
                     "rt_id": retweet_id
                 }
 
+
                 insert_mongo(tweet, twitter_data)
 
-                if retweet_data:
+                if data['text'].startswith('RT'):
                     print("Need to write retweeted tweet to database")
-                    print("Original tweet ID:", retweet_data['id_str'])
+                    #print("Original tweet ID:", retweet_data['id_str'])
                     tweet_id_set.add(retweet_data['id_str'])
 
                     if is_tweet_new(retweet_data['id_str'], twitter_data):
@@ -298,7 +299,7 @@ if __name__ == "__main__":
                         print("Original tweet is already in DB")
                         is_orig_tweet_new = False
 
-                    print("Starting original tweet user checks")
+                    #print("Starting original tweet user checks")
 
                     orig_user = retweet_data['user']
 
@@ -311,7 +312,7 @@ if __name__ == "__main__":
                         insert_orig_data = [orig_user_id, orig_name, orig_screen_name, orig_followers_count, orig_friends_count, last_tweet]
                         insert_mysql(insert_orig_data, mysql_connection, mysql_cursor, insert = True)
                     else: #Original User Exists
-                        print("Last tweet:", orig_user_entry[5])
+                        #print("Last tweet:", orig_user_entry[5])
                         if last_tweet > orig_user_entry[5]: #More recent tweet, so check that other info is up to date
                             print("Update original user", screen_name)
                             orig_update_data = [orig_user_id, orig_name, orig_screen_name, orig_followers_count, orig_friends_count, last_tweet]

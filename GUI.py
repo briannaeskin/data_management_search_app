@@ -12,6 +12,8 @@ from tkinter import *
 from tkinter.ttk import *
 from tkinter import ttk
 import json
+import search_app
+from datetime import datetime
 
 #Create an instance of Tkinter frame
 win = Tk()
@@ -22,13 +24,88 @@ entry = StringVar()
 time_entry = StringVar()
 
 #User presses submit button and function returns the user's inputs 
-def submit():
+def submit_user():
     global entry
     global time_entry
-    if time_entry.get() == "" : 
-        return entry.get() , ""
-    time_range = json.loads(time_entry.get())
-    return entry.get() , time_range
+
+    input = entry.get()
+
+    if time_entry.get() == "":
+        timerange_lower = None
+        timerange_upper = None
+
+    else:
+        timerange_lower, timerange_upper = time_entry.get().strip().split(',')
+        timerange_lower = datetime.strptime(timerange_lower.strip(), '%m/%d/%Y %H:%M:%S') if timerange_lower else None
+        timerange_upper = datetime.strptime(timerange_upper.strip(), '%m/%d/%Y %H:%M:%S') if timerange_upper else None
+
+    search_query = search_app.Search()
+
+
+    result = search_query.search_by_user(input, timerange_lower, timerange_upper)
+    #if time_entry.get() == "" :
+    #    return entry.get() , ""
+    #time_range = json.loads(time_entry.get())
+    #return entry.get() , time_range
+
+    output_label = Label(win, text=result)
+    output_label.pack()
+
+def submit_tweet():
+    global entry
+    global time_entry
+
+    input = entry.get()
+
+    if time_entry.get() == "":
+        timerange_lower = None
+        timerange_upper = None
+
+    else:
+        timerange_lower, timerange_upper = time_entry.get().strip().split(',')
+        timerange_lower = datetime.strptime(timerange_lower.strip(), '%m/%d/%Y %H:%M:%S') if timerange_lower else None
+        timerange_upper = datetime.strptime(timerange_upper.strip(), '%m/%d/%Y %H:%M:%S') if timerange_upper else None
+
+    search_query = search_app.Search()
+
+
+    result = search_query.search_by_text(input, timerange_lower, timerange_upper)
+    #if time_entry.get() == "" :
+    #    return entry.get() , ""
+    #time_range = json.loads(time_entry.get())
+    #return entry.get() , time_range
+
+    output_label = Label(win, text=result)
+    output_label.pack()
+
+def submit_hashtag():
+    global entry
+    global time_entry
+
+    input = entry.get()
+
+    if time_entry.get() == "":
+        timerange_lower = None
+        timerange_upper = None
+
+    else:
+        timerange_lower, timerange_upper = time_entry.get().strip().split(',')
+        timerange_lower = datetime.strptime(timerange_lower.strip(), '%m/%d/%Y %H:%M:%S') if timerange_lower else None
+        timerange_upper = datetime.strptime(timerange_upper.strip(), '%m/%d/%Y %H:%M:%S') if timerange_upper else None
+
+    search_query = search_app.Search()
+
+
+    result = search_query.search_by_hashtag(input, timerange_lower, timerange_upper)
+    #if time_entry.get() == "" :
+    #    return entry.get() , ""
+    #time_range = json.loads(time_entry.get())
+    #return entry.get() , time_range
+
+    output_label = Label(win, text=result)
+    output_label.pack()
+
+
 
 # User selects option to input a tweet and query time range
 def open_popup_tweet():
@@ -44,7 +121,7 @@ def open_popup_tweet():
    t = Entry(top , textvariable = time_entry)
    t.pack()
    
-   ttk.Button(top,text = "Submit",command = submit).pack()
+   ttk.Button(top,text = "Submit",command = submit_tweet).pack()
    
 # User selects option to input a user and query time range   
 def open_popup_user(): 
@@ -56,10 +133,10 @@ def open_popup_user():
    e = Entry(top, textvariable = entry)
    e.pack()
    
-   Label(top, text="What time range do you want? (Format of input: [start,end])", font=('Helvetica 14 bold')).pack(pady=20)
+   Label(top, text="What time range do you want? (Format of input: [start,end], with start/end of format mm/dd/yyyy H:M:S)", font=('Helvetica 14 bold')).pack(pady=20)
    t = Entry(top , textvariable = time_entry)
    t.pack()
-   ttk.Button(top,text = "Submit",command = submit).pack()
+   ttk.Button(top,text = "Submit",command = submit_user).pack()
 
 #User selects option to input a hashtag and query time range
 def open_popup_hashtag():
@@ -75,13 +152,12 @@ def open_popup_hashtag():
    t = Entry(top , textvariable = time_entry)
    t.pack()
    
-   ttk.Button(top,text = "Submit",command = submit).pack()
-             
+   ttk.Button(top,text = "Submit",command = submit_hashtag).pack()
    
 Label(win, text="What do you want to search for?", font=('Helvetica 14 bold')).pack(pady=20)
 
 #Create a button in the main Window to open the popup
 ttk.Button(win, text= "User", command= open_popup_user).pack()
-ttk.Button(win , text = "Tweet" , command=open_popup_tweet ).pack()
-ttk.Button(win, text = "Hashtag" , command=open_popup_hashtag).pack() 
+ttk.Button(win , text = "Tweet" , command=open_popup_tweet).pack()
+ttk.Button(win, text = "Hashtag" , command=open_popup_hashtag).pack()
 win.mainloop()
