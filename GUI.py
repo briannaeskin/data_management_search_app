@@ -83,6 +83,11 @@ def submit_tweet():
     #time_range = json.loads(time_entry.get())
     #return entry.get() , time_range
 
+    Label(top, text="Enter Tweet ID to drilldown on user", font=('Helvetica 14 bold')).pack(pady=20)
+    e = Entry(top, textvariable=entry)
+    e.pack()
+    ttk.Button(top, text="Submit", command=drilldown).pack()
+
     output_label = Label(top, text=result, wraplength=1500)
     output_label.pack()
 
@@ -114,10 +119,28 @@ def submit_hashtag():
     #time_range = json.loads(time_entry.get())
     #return entry.get() , time_range
 
+    Label(top, text="Enter Tweet ID to drilldown on user", font=('Helvetica 14 bold')).pack(pady=20)
+    e = Entry(top, textvariable=entry)
+    e.pack()
+    ttk.Button(top, text="Submit", command=drilldown).pack()
+
     output_label = Label(top, text=result, wraplength=1500)
     output_label.pack()
 
+def drilldown():
+    top = Toplevel(win)
+    top.geometry("750x250")
+    top.title("User Drilldown")
 
+    global entry
+
+    input = entry.get()
+
+    search_query = search_app.Search()
+
+    result = search_query.user_drilldown(input)
+    output_label = Label(top, text=result, wraplength=1500)
+    output_label.pack()
 
 # User selects option to input a tweet and query time range
 def open_popup_tweet():

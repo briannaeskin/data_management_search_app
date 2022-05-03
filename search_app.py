@@ -233,6 +233,57 @@ class Search:
 
             return cache_status + '\n' + runtime + '\n' + result
 
+    def user_drilldown(self, tweet_id):
+        query = {'tweet_id': tweet_id}
+        tweet = self.tweet_info_collection.find_one(query)
+        user_id = tweet['user_id']
+
+        self.cursor.execute("""SELECT * FROM user_info WHERE user_id = '{}'""".format(user_id))
+        user = self.cursor.fetchone()
+
+        user_name = user[1]
+        screen_name = user[2]
+        num_followers = user[3]
+        num_friends = user[4]
+
+        query = {'user_id': user_id}
+        tweets = self.tweet_info_collection.find(query).sort('total_engagement', -1)
+
+        num_tweets = 0
+        most_recent_tweet = None
+        popular_tweets = ""
+
+        for tweet in tweets:
+            num_tweets += 1
+            if num_tweets <= 5:
+                popular_tweets += str(tweet) + '\n'
+            try:
+                if tweet['tweeted_date'] > most_recent_tweet['tweeted_date']:
+                    most_recent_tweet = tweet
+            except:
+                most_recent_tweet = tweet
+
+        most_recent_tweet_str = str(most_recent_tweet)
+
+        result = """
+        Result for user name: {}
+
+        Name: {}
+        Number of Followers: {}
+        Number of Friends: {}
+        Total Tweets (Including Retweets): {}
+        Most Recent Tweet: 
+        {}
+
+        Top Tweets: 
+        {}
+        """.format(screen_name, user_name, num_followers, num_friends, num_tweets, most_recent_tweet_str,
+                   popular_tweets)
+
+        return result
+
+
+
 if __name__ == "__main__":
     search = Search()
     #Test Queries
