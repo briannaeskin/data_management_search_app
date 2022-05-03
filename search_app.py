@@ -282,6 +282,24 @@ class Search:
 
         return result
 
+    def search_most_popular_tweets(self):
+        tweets = self.tweet_info_collection.find().sort('total_engagement', -1).limit(10)
+        most_popular_tweets = ""
+        for tweet in tweets:
+            most_popular_tweets += str(tweet) + '\n'
+        return most_popular_tweets
+
+    def search_most_followed(self):
+        self.cursor.execute("""SELECT * FROM user_info ORDER BY followers_count desc""")
+        users = self.cursor.fetchmany(size=10)
+
+        output = ""
+
+        for user in users:
+            output += ("User: " + user[2] + "     Number of Followers: " + str(user[3]) + '\n')
+
+        return output
+
 
 
 if __name__ == "__main__":

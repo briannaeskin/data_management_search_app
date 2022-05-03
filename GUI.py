@@ -188,6 +188,32 @@ def open_popup_hashtag():
    t.pack()
    
    ttk.Button(top,text = "Submit",command = submit_hashtag).pack()
+
+def open_most_followed():
+    top = Toplevel(win)
+    top.geometry("750x250")
+    top.title("most followed")
+
+    Label(top, text="Most Followed Users", font=('Helvetica 14 bold')).pack(pady=20)
+
+    search_query = search_app.Search()
+
+    result = search_query.search_most_followed()
+    output_label = Label(top, text=result, wraplength=1500)
+    output_label.pack()
+
+def open_most_popular_tweets():
+    top = Toplevel(win)
+    top.geometry("750x250")
+    top.title("most popular tweets")
+
+    Label(top, text="Most Popular Tweets", font=('Helvetica 14 bold')).pack(pady=20)
+
+    search_query = search_app.Search()
+
+    result = search_query.search_most_popular_tweets()
+    output_label = Label(top, text=result, wraplength=1500)
+    output_label.pack()
    
 Label(win, text="What do you want to search for?", font=('Helvetica 14 bold')).pack(pady=20)
 
@@ -195,4 +221,6 @@ Label(win, text="What do you want to search for?", font=('Helvetica 14 bold')).p
 ttk.Button(win, text= "User", command= open_popup_user).pack()
 ttk.Button(win , text = "Tweet" , command=open_popup_tweet).pack()
 ttk.Button(win, text = "Hashtag" , command=open_popup_hashtag).pack()
+ttk.Button(win, text="Top 10 Most Followed Users", command=open_most_followed).pack()
+ttk.Button(win, text="Top 10 Most Popular Tweets", command=open_most_popular_tweets).pack()
 win.mainloop()

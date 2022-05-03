@@ -25,7 +25,7 @@ def setup_mysql():
     friends_count INT,
     last_tweet_id VARCHAR(255),
     PRIMARY KEY(user_id),
-    INDEX(screen_name)
+    INDEX(screen_name, followers_count)
     );
     """
 
