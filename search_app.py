@@ -81,7 +81,8 @@ class Search:
             Number of Tweets: {}
             Number of Retweets: {}
 
-            Most Popular Tweets: {}
+            Most Popular Tweets: 
+            {}
 
             """.format(text, num_tweets, num_retweets, popular_tweets)
 
@@ -143,7 +144,8 @@ class Search:
             Number of Tweets: {}
             Number of Retweets: {}
             
-            Most Popular Tweets: {}
+            Most Popular Tweets: 
+            {}
             
             """.format(hashtag, num_tweets, num_retweets, popular_tweets)
 
@@ -220,9 +222,11 @@ class Search:
             Number of Followers: {}
             Number of Friends: {}
             Total Tweets (Including Retweets): {}
-            Most Recent Tweet: {}
+            Most Recent Tweet: 
+            {}
         
-            Top Tweets: {}
+            Top Tweets: 
+            {}
             """.format(screen_name, user_name, num_followers, num_friends, num_tweets, most_recent_tweet_str, popular_tweets)
 
             #Add to Redis cache

@@ -28,6 +28,10 @@ def submit_user():
     global entry
     global time_entry
 
+    top = Toplevel(win)
+    top.geometry("750x250")
+    top.title("User Search Results")
+
     input = entry.get()
 
     if time_entry.get() == "":
@@ -48,12 +52,16 @@ def submit_user():
     #time_range = json.loads(time_entry.get())
     #return entry.get() , time_range
 
-    output_label = Label(win, text=result)
+    output_label = Label(top, text=result, wraplength=1500)
     output_label.pack()
 
 def submit_tweet():
     global entry
     global time_entry
+
+    top = Toplevel(win)
+    top.geometry("750x250")
+    top.title("Tweet Text Search Results")
 
     input = entry.get()
 
@@ -75,12 +83,16 @@ def submit_tweet():
     #time_range = json.loads(time_entry.get())
     #return entry.get() , time_range
 
-    output_label = Label(win, text=result)
+    output_label = Label(top, text=result, wraplength=1500)
     output_label.pack()
 
 def submit_hashtag():
     global entry
     global time_entry
+
+    top = Toplevel(win)
+    top.geometry("750x250")
+    top.title("Hashtag Search Results")
 
     input = entry.get()
 
@@ -102,7 +114,7 @@ def submit_hashtag():
     #time_range = json.loads(time_entry.get())
     #return entry.get() , time_range
 
-    output_label = Label(win, text=result)
+    output_label = Label(top, text=result, wraplength=1500)
     output_label.pack()
 
 
