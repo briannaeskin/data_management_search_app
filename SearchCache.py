@@ -34,7 +34,7 @@ class Cache:
         self.cache[key] = value
         self.cache.move_to_end(key)
         if len(self.cache) > self.size:
-            self.cache.popitem(last = False) 
+            self.cache.popitem(last = False)
             
 if __name__ == "__main__" : 
     cache = Cache(2)

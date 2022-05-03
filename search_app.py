@@ -7,6 +7,7 @@ from pymongo import MongoClient
 from datetime import datetime
 import mysql.connector as connection
 import time
+import SearchCache
 
 class Search:
 
@@ -26,7 +27,8 @@ class Search:
         self.twitter_data = self.client["twitter_data"]
         self.tweet_info_collection = self.twitter_data["tweet_info"]
 
-        #Placeholder for Redis store
+        #Create Cache
+        self.cache = SearchCache.Cache(3)
 
     def search_by_text(self, text, timerange_lower=None, timerange_upper=None):
         """
@@ -34,18 +36,25 @@ class Search:
         retweets contain the text, the most popular tweets
         """
 
-        start_time = time.time()
-        redis_enabled = False #Temp vairable since no cache is set up yet. Will remove this and all reference once set up
+        timerange_lower = timerange_lower if timerange_lower else datetime.strptime('1/1/2000', '%m/%d/%Y')
+        timerange_upper = timerange_upper if timerange_upper else datetime.strptime('12/31/9999', '%m/%d/%Y')
 
-        if redis_enabled:
+        start_time = time.time()
+
+        cache_result = self.cache.get((text, timerange_lower, timerange_upper))
+
+        if cache_result != -1:
             cache_status = "Found in cache"
-            pass
+            end_time = time.time()
+            query_runtime = end_time - start_time
+
+            query_runtime_ms = query_runtime * 1000
+            runtime = "Results returned in: {} ms".format(query_runtime_ms)
+
+            return cache_status + '\n' + runtime + '\n' + cache_result
 
         else:
             cache_status = "Not Found in cache. Data pulled from Mongo and mySQL"
-
-            timerange_lower = timerange_lower if timerange_lower else datetime.strptime('1/1/2000', '%m/%d/%Y')
-            timerange_upper = timerange_upper if timerange_upper else datetime.strptime('12/31/9999', '%m/%d/%Y')
 
             query = {
                 "$or": [
@@ -87,6 +96,7 @@ class Search:
             """.format(text, num_tweets, num_retweets, popular_tweets)
 
             # Add to Redis cache
+            self.cache.put((text, timerange_lower, timerange_upper), result)
 
             return cache_status + '\n' + runtime + '\n' + result
 
@@ -97,18 +107,24 @@ class Search:
         many retweets use that hashtag, the most popular tweets
         """
 
-        start_time = time.time()
-        redis_enabled = False #Temp variable since no cache is set up yet. Will remove this and all reference once set up
+        timerange_lower = timerange_lower if timerange_lower else datetime.strptime('1/1/2000', '%m/%d/%Y')
+        timerange_upper = timerange_upper if timerange_upper else datetime.strptime('12/31/9999', '%m/%d/%Y')
 
-        if redis_enabled:
+        start_time = time.time()
+        cache_result = self.cache.get((hashtag, timerange_lower, timerange_upper))
+
+        if cache_result != -1:
             cache_status = "Found in cache"
-            pass
+            end_time = time.time()
+            query_runtime = end_time - start_time
+
+            query_runtime_ms = query_runtime * 1000
+            runtime = "Results returned in: {} ms".format(query_runtime_ms)
+
+            return cache_status + '\n' + runtime + '\n' + cache_result
 
         else:
             cache_status = "Not Found in cache. Data pulled from Mongo and mySQL"
-
-            timerange_lower = timerange_lower if timerange_lower else datetime.strptime('1/1/2000', '%m/%d/%Y')
-            timerange_upper = timerange_upper if timerange_upper else datetime.strptime('12/31/9999', '%m/%d/%Y')
 
             query = {
                 "$or": [
@@ -150,6 +166,7 @@ class Search:
             """.format(hashtag, num_tweets, num_retweets, popular_tweets)
 
             #Add to Redis cache
+            self.cache.put((hashtag, timerange_lower, timerange_upper), result)
 
             return cache_status + '\n' + runtime + '\n' + result
 
@@ -160,8 +177,10 @@ class Search:
         their 5 most popular tweets (or all tweets if user tweeted less than 5 times)
         """
 
+        timerange_lower = timerange_lower if timerange_lower else datetime.strptime('1/1/2000', '%m/%d/%Y')
+        timerange_upper = timerange_upper if timerange_upper else datetime.strptime('12/31/9999', '%m/%d/%Y')
+
         start_time = time.time()
-        redis_enabled = False #Temp variable since no cache is set up yet. Will remove this and all reference once set up
 
         #Query user_id based on screen_name, required for Redis lookup, so needs to execute regardless
         self.cursor.execute("""SELECT * FROM user_info WHERE screen_name = '{}'""".format(user_name))
@@ -173,22 +192,23 @@ class Search:
 
         user_id = user[0]
 
-        if redis_enabled:
-            """
-            This is the placeholder for the cache check. For now passing. But when ready for implementation will need to
-            replace with check for redis key and fill in accordingly
-            """
+        cache_result = self.cache.get((user_name, timerange_lower, timerange_upper))
+
+        if cache_result != -1:
             cache_status = "Found in cache"
-            pass
+            end_time = time.time()
+            query_runtime = end_time - start_time
+
+            query_runtime_ms = query_runtime * 1000
+            runtime = "Results returned in: {} ms".format(query_runtime_ms)
+
+            return cache_status + '\n' + runtime + '\n' + cache_result
         else:
             cache_status = "Not Found in cache. Data pulled from Mongo and mySQL"
             user_name = user[1]
             screen_name = user[2]
             num_followers = user[3]
             num_friends = user[4]
-
-            timerange_lower = timerange_lower if timerange_lower else datetime.strptime('1/1/2000', '%m/%d/%Y')
-            timerange_upper = timerange_upper if timerange_upper else datetime.strptime('12/31/9999', '%m/%d/%Y')
 
             query = {'user_id': user_id, 'tweeted_date': {'$gte': timerange_lower, '$lt': timerange_upper}}
 
@@ -230,6 +250,7 @@ class Search:
             """.format(screen_name, user_name, num_followers, num_friends, num_tweets, most_recent_tweet_str, popular_tweets)
 
             #Add to Redis cache
+            self.cache.put((screen_name, timerange_lower, timerange_upper), result)
 
             return cache_status + '\n' + runtime + '\n' + result
 
@@ -309,8 +330,11 @@ if __name__ == "__main__":
     #print(search.search_by_hashtag("Drosten"))
 
     #print(search.search_by_text("Turkey", None,datetime.strptime('04/10/2020','%m/%d/%Y')))
-    #print(search.search_by_text("Trump"))
 
-    print(search.search_by_user("Turkey_Pics", None, datetime.strptime('04/4/2020','%m/%d/%Y')))
-    #print(search.search_by_user("nuffsaidny"))
+    #print(search.cache.get(("Turkey", None, datetime.strptime('04/10/2020', '%m/%d/%Y'))))
+
+    #print(search.search_by_text("Turkey", None,datetime.strptime('04/10/2020','%m/%d/%Y')))
+
+    print(search.search_by_user("jk_rowling", None, datetime.strptime('04/4/2020','%m/%d/%Y')))
+    print(search.search_by_user("jk_rowling", None, datetime.strptime('04/4/2020','%m/%d/%Y')))
 

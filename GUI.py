@@ -15,6 +15,8 @@ import json
 import search_app
 from datetime import datetime
 
+
+
 #Create an instance of Tkinter frame
 win = Tk()
 #Set the geometry of Tkinter frame
@@ -22,6 +24,8 @@ win.geometry("750x270")
 
 entry = StringVar()
 time_entry = StringVar()
+
+search_query = search_app.Search()
 
 #User presses submit button and function returns the user's inputs 
 def submit_user():
@@ -42,8 +46,6 @@ def submit_user():
         timerange_lower, timerange_upper = time_entry.get().strip().split(',')
         timerange_lower = datetime.strptime(timerange_lower.strip(), '%m/%d/%Y %H:%M:%S') if timerange_lower else None
         timerange_upper = datetime.strptime(timerange_upper.strip(), '%m/%d/%Y %H:%M:%S') if timerange_upper else None
-
-    search_query = search_app.Search()
 
 
     result = search_query.search_by_user(input, timerange_lower, timerange_upper)
@@ -73,8 +75,6 @@ def submit_tweet():
         timerange_lower, timerange_upper = time_entry.get().strip().split(',')
         timerange_lower = datetime.strptime(timerange_lower.strip(), '%m/%d/%Y %H:%M:%S') if timerange_lower else None
         timerange_upper = datetime.strptime(timerange_upper.strip(), '%m/%d/%Y %H:%M:%S') if timerange_upper else None
-
-    search_query = search_app.Search()
 
 
     result = search_query.search_by_text(input, timerange_lower, timerange_upper)
@@ -109,8 +109,6 @@ def submit_hashtag():
         timerange_lower, timerange_upper = time_entry.get().strip().split(',')
         timerange_lower = datetime.strptime(timerange_lower.strip(), '%m/%d/%Y %H:%M:%S') if timerange_lower else None
         timerange_upper = datetime.strptime(timerange_upper.strip(), '%m/%d/%Y %H:%M:%S') if timerange_upper else None
-
-    search_query = search_app.Search()
 
 
     result = search_query.search_by_hashtag(input, timerange_lower, timerange_upper)
