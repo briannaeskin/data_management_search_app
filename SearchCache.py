@@ -4,8 +4,7 @@ Created on Wed Apr 13 19:31:39 2022
 
 @author: Michael Gleyzer
 """
-import pandas as pd 
-import json  
+
 from datetime import datetime, timezone   
 from collections import OrderedDict
 
@@ -14,27 +13,31 @@ class Cache:
     def __init__(self, size: int):
         self.cache = OrderedDict()
         self.size = size
-        
-    def get(self, key: tuple) :
+    
+    # In the retrieve method, we retrieve the desired search query by
+    # moving the corresponding {key : value} pair to the end of the dictionary, and returning the value,
+    # which are the query results
+    def retrieve(self, key: tuple) :
       if key not in self.cache:
-            return -1  
+            return None 
       else:
             self.cache.move_to_end(key)  
-            return self.cache[key]
+            return self.cache[key] 
  
-    # first, we add / update the key by conventional methods.
-    # And also move the key to the end to show that it was recently used.
-    # But here we will also check whether the length of our
-    # ordered dictionary has exceeded our capacity,
-    # If so we remove the first key (least recently used)
     
-    # Modify by making the key to be (string hastag , string lowtime-hightime) and value be 
-    # the results you would like from the search query as written in the "search app"
-    def put(self, key, value) :
+    #The key will be a tuple in the form of (string query , string lowtime-hightime or date string) and the corresponding value 
+    # will be the result of the search query.  
+    
+    #In the store method we store the {key:value} pair at the end of the cache, if there is enough space.
+    # If there isn't enough space, then we remove the first item from the cache, 
+    # which is the least recently used item or the oldest item in the cache
+    
+    
+    def store(self,key,value) : 
         self.cache[key] = value
         self.cache.move_to_end(key)
         if len(self.cache) > self.size:
-            self.cache.popitem(last = False)
+            self.cache.popitem(last = False) 
             
 if __name__ == "__main__" : 
     cache = Cache(2)
