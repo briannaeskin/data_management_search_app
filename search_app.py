@@ -1,6 +1,6 @@
 """
 Author: Brianna Eskin
-Function: Holds the search app, including the GUI
+Function: Holds the search app functionality
 """
 
 from pymongo import MongoClient
@@ -41,9 +41,9 @@ class Search:
 
         start_time = time.time()
 
-        cache_result = self.cache.get((text, timerange_lower, timerange_upper))
+        cache_result = self.cache.retrieve((text, timerange_lower, timerange_upper))
 
-        if cache_result != -1:
+        if cache_result:
             cache_status = "Found in cache"
             end_time = time.time()
             query_runtime = end_time - start_time
@@ -96,7 +96,7 @@ class Search:
             """.format(text, num_tweets, num_retweets, popular_tweets)
 
             # Add to Redis cache
-            self.cache.put((text, timerange_lower, timerange_upper), result)
+            self.cache.store((text, timerange_lower, timerange_upper), result)
 
             return cache_status + '\n' + runtime + '\n' + result
 
@@ -111,9 +111,9 @@ class Search:
         timerange_upper = timerange_upper if timerange_upper else datetime.strptime('12/31/9999', '%m/%d/%Y')
 
         start_time = time.time()
-        cache_result = self.cache.get((hashtag, timerange_lower, timerange_upper))
+        cache_result = self.cache.retrieve((hashtag, timerange_lower, timerange_upper))
 
-        if cache_result != -1:
+        if cache_result:
             cache_status = "Found in cache"
             end_time = time.time()
             query_runtime = end_time - start_time
@@ -166,7 +166,7 @@ class Search:
             """.format(hashtag, num_tweets, num_retweets, popular_tweets)
 
             #Add to Redis cache
-            self.cache.put((hashtag, timerange_lower, timerange_upper), result)
+            self.cache.store((hashtag, timerange_lower, timerange_upper), result)
 
             return cache_status + '\n' + runtime + '\n' + result
 
@@ -192,9 +192,9 @@ class Search:
 
         user_id = user[0]
 
-        cache_result = self.cache.get((user_name, timerange_lower, timerange_upper))
+        cache_result = self.cache.retrieve((user_name, timerange_lower, timerange_upper))
 
-        if cache_result != -1:
+        if cache_result:
             cache_status = "Found in cache"
             end_time = time.time()
             query_runtime = end_time - start_time
@@ -250,7 +250,7 @@ class Search:
             """.format(screen_name, user_name, num_followers, num_friends, num_tweets, most_recent_tweet_str, popular_tweets)
 
             #Add to Redis cache
-            self.cache.put((screen_name, timerange_lower, timerange_upper), result)
+            self.cache.store((screen_name, timerange_lower, timerange_upper), result)
 
             return cache_status + '\n' + runtime + '\n' + result
 
@@ -329,12 +329,14 @@ if __name__ == "__main__":
     #print(search.search_by_hashtag("coronavirus"))
     #print(search.search_by_hashtag("Drosten"))
 
-    #print(search.search_by_text("Turkey", None,datetime.strptime('04/10/2020','%m/%d/%Y')))
+    print(search.search_by_text("Turkey", None,datetime.strptime('04/10/2020','%m/%d/%Y')))
+    print(search.search_by_text("Turkey", None,datetime.strptime('04/10/2020','%m/%d/%Y')))
 
-    #print(search.cache.get(("Turkey", None, datetime.strptime('04/10/2020', '%m/%d/%Y'))))
+    print(search.search_by_user("detikcom", None, None))
+    print(search.search_by_user("detikcom", None, None))
 
-    #print(search.search_by_text("Turkey", None,datetime.strptime('04/10/2020','%m/%d/%Y')))
+    print(search.search_by_hashtag("coronavirus", datetime.strptime('04/01/2020', '%m/%d/%Y'), datetime.strptime('04/30/2020', '%m/%d/%Y')))
+    print(search.search_by_hashtag("coronavirus", datetime.strptime('04/01/2020', '%m/%d/%Y'), datetime.strptime('04/30/2020', '%m/%d/%Y')))
 
-    print(search.search_by_user("jk_rowling", None, datetime.strptime('04/4/2020','%m/%d/%Y')))
-    print(search.search_by_user("jk_rowling", None, datetime.strptime('04/4/2020','%m/%d/%Y')))
+
 
