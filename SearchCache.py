@@ -16,7 +16,7 @@ class Cache:
     
     # In the retrieve method, we retrieve the desired search query by
     # moving the corresponding {key : value} pair to the end of the dictionary, and returning the value,
-    # which are the query results
+    # which are the query results.
     def retrieve(self, key: tuple) :
       if key not in self.cache:
             return None 
@@ -26,11 +26,11 @@ class Cache:
  
     
     #The key will be a tuple in the form of (string query , string lowtime-hightime or date string) and the corresponding value 
-    # will be the result of the search query.  
+    # will be the string result of the search query.  
     
     #In the store method we store the {key:value} pair at the end of the cache, if there is enough space.
     # If there isn't enough space, then we remove the first item from the cache, 
-    # which is the least recently used item or the oldest item in the cache
+    # which is the least recently used item or the oldest item in the cache.
     
     
     def store(self,key,value) : 
